@@ -14,9 +14,10 @@ client = OpenAI(
     api_key=github_token 
 )
 # --- UI SETTINGS ---
-st.set_page_config(page_title="Universal Data Mapper", layout="wide")
-st.title("🚀 Client Data Auto-Mapper")
-st.write("Upload any messy client spreadsheet, and the AI will format it to our standard schema.")
+st.set_page_config(page_title="Hitler", layout="wide")
+st.title("Hello, I am Hitler🥸")
+st.write("I am not a cruel person as people may think!🥹 Today, I am just your AI assistant. " \
+"I am here to help you do the job more effiently, Upload any messy client spreadsheet, and the I will format it to talabat's standard schema.")
 
 # --- THE APP LOGIC ---
 uploaded_file = st.file_uploader("Upload Client Spreadsheet (CSV or Excel)", type=["csv", "xlsx"])
