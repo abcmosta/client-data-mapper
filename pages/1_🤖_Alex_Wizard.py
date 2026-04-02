@@ -57,8 +57,16 @@ with st.sidebar:
 
 # --- MAIN APP HEADER ---
 st.title("🤖 Alex, The Invincible")
-st.markdown("""
-Hello There ❤️, I am **Alex**. 
+
+# Safely grab the user's name from memory, fallback to their email prefix if missing
+display_name = st.session_state.get('user_name', '')
+if not display_name and 'user' in st.session_state and st.session_state.user:
+    display_name = st.session_state.user.email.split('@')[0].title()
+elif not display_name:
+    display_name = "There"
+
+st.markdown(f"""
+Hello **{display_name}** ❤️, I am **Alex**. 
 An AI Assistant Created By **Mostafa Abdelaziz**. 
 I am your window for more efficient data work. Just upload the raw vendor file and let me do my magic ✨.
 """)
