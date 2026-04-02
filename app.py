@@ -18,13 +18,13 @@ if 'user' not in st.session_state:
     st.session_state.user = None
 
 # --- UI: LOGIN GATE ---
-st.title("🔐 Welcome to Alex AI")
-st.markdown("Please verify your identity to access the Enterprise Catalogue Wizard.")
+st.title("Welcome to Alex AI")
+st.markdown("Please verify your identity to so Alex can help you do great stuff.")
 st.divider()
 
 if st.session_state.user is None:
     # 1. Email Input Form
-    email = st.text_input("Enter your Work Email", placeholder="name@talabat.com")
+    email = st.text_input("Enter your Work Email", placeholder="name@instashop.com")
     
     if st.button("Send Verification Code"):
         if email:
