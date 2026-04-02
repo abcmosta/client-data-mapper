@@ -44,7 +44,6 @@ with st.sidebar:
     """, language="markdown")
 
 # --- MAIN APP HEADER ---
-# --- MAIN APP HEADER ---
 st.title("👻 Alex, The Invincible") 
 
 st.markdown("""
@@ -56,7 +55,7 @@ I am your window for more efficient data work. Just upload the raw vendor file a
 st.divider()
 
 # --- FILE UPLOADER ---
-uploaded_file = st.file_uploader("Drop the messy client file here (CSV or Excel)", type=["csv", "xlsx"])
+uploaded_file = st.file_uploader("Drop the messy client file here (.csv or .xlsx)", type=["csv", "xlsx"])
 
 if uploaded_file:
     try:
