@@ -26,7 +26,7 @@ if not st.session_state.authenticated:
     
     with col2:
         st.title("⚡ Welcome to Alex")
-        st.markdown("I am your AI Catalogue Assistant. Please sign in with the Company Master Key to proceed.")
+        st.markdown("I am your AI Catalogue Assistant. Please sign in with central password to proceed. Incase you do have it please reach @mostafa on slack ;)")
         st.write("---")
         
         with st.form("login_form"):
