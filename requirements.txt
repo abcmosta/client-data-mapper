@@ -2,3 +2,4 @@ streamlit
 pandas
 openai
 openpyxl
+supabase
