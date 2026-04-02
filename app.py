@@ -46,7 +46,7 @@ if st.session_state.user is None:
         # STATE 1: Ask for Name and Email
         if not st.session_state.otp_sent:
             user_name = st.text_input("What would you like me to call you?", placeholder="e.g., Mostafa")
-            email = st.text_input("Work Email", placeholder="name@talabat.com")
+            email = st.text_input("Work Email", placeholder="name@instashop.com")
             
             st.write("") # Spacer
             if st.button("Send Verification Code", use_container_width=True):
