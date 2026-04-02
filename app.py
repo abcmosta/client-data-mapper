@@ -67,7 +67,7 @@ if st.session_state.user is None:
         # STATE 2: Enter the Code
         else:
             st.success(f"Code dispatched to **{st.session_state.login_email}**")
-            otp = st.text_input("Enter the 6-Digit Code", max_chars=6)
+            otp = st.text_input("Enter the 8-Digit Code", max_chars=8)
             
             st.write("") # Spacer
             if st.button("Unlock Alex", type="primary", use_container_width=True):
