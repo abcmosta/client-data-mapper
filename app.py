@@ -5,7 +5,7 @@ import json
 import re
 
 # --- UI PAGE CONFIGURATION ---
-st.set_page_config(page_title="Catalogue Onboarding", page_icon="📦", layout="wide")
+st.set_page_config(page_title="Content Wizard Optimizer", page_icon="🌀", layout="wide")
 
 # --- SETUP THE AI BRAIN ---
 github_token = st.secrets["GITHUB_TOKEN"]
