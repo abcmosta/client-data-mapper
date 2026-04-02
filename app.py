@@ -7,6 +7,25 @@ import re
 # --- UI PAGE CONFIGURATION ---
 st.set_page_config(page_title="Content Wizard Optimizer", page_icon="🌀", layout="wide", initial_sidebar_state="expanded")
 
+# --- FORCE DARK THEME CSS ---
+st.markdown("""
+    <style>
+        /* Main background */
+        .stApp {
+            background-color: #0E1117;
+            color: #FAFAFA;
+        }
+        /* Sidebar background */
+        [data-testid="stSidebar"] {
+            background-color: #1a1c24;
+        }
+        /* Make metric labels white */
+        [data-testid="stMetricLabel"] {
+            color: #FAFAFA !important;
+        }
+    </style>
+    """, unsafe_allow_html=True)
+
 # --- SETUP THE AI BRAIN ---
 github_token = st.secrets["GITHUB_TOKEN"]
 client = OpenAI(
