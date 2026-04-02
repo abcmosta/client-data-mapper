@@ -87,11 +87,33 @@ if uploaded_file:
             if st.button("🧠 Map & Validate Catalogue", type="primary"):
                 with st.spinner("AI is mapping columns and extracting missing units..."):
                     
+                    # --- Alex'S STRICT MAPPING PROMPT ---
                     mapping_prompt = f"""
-                    Map the client headers to this exact case-sensitive schema: {target_schema}.
+                    You are Alex, an elite Data Engineer. 
+                    Map the client headers to our 'Target Schema': {target_schema}.
+
                     Client Headers: {headers}
-                    Sample Data: {sample}
-                    Return ONLY a JSON object: {{"Target_Field": "Client_Header"}}
+                    Data Sample: {sample}
+
+                    STRICT RULES & TIE-BREAKERS:
+                    1. 'pieceBarcode': Priority is EAN > GTIN > UPC > Barcode > Item Code > PLU. 
+                       (Look for 12 to 14 digit global numbers).
+                    
+                    2. 'productTitle::en': Choose the MOST descriptive English header. 
+                       Priority: Long Description > Title > Name.
+                    
+                    3. 'contentsValue': Look for Size, Weight, Volume, Net Weight, or Qty.
+                       🚨 CRITICAL RULE: NEVER map Price, Cost, MSRP, or RRP to contentsValue. Ignore all financial or currency columns completely.
+                    
+                    4. 'contentsUnit': Look for UOM, Unit, Measurement. 
+                       🚨 CRITICAL RULE: NEVER map currency symbols ($, AED, EGP, SAR) to contentsUnit.
+                    
+                    5. 'imageUrls': Look for Link, URL, Photo, Media.
+                    
+                    6. 'brandName': Look for Vendor, Manufacturer, Make, Brand.
+
+                    Return ONLY a JSON object: {{"Target_Field": "Client_Header"}}. 
+                    If no valid match exists for a field, omit it entirely so our Smart Extractor can handle it later.
                     """
                     
                     response = client.chat.completions.create(
@@ -103,6 +125,12 @@ if uploaded_file:
                         response_format={ "type": "json_object" }
                     )
                     mapping_dict = json.loads(response.choices[0].message.content)
+                    # UI: Show Caspar's Logic in the Sidebar
+                    with st.sidebar:
+                        st.divider()
+                        st.success("🤖 Caspar's Logic Applied")
+                        for target, client_h in mapping_dict.items():
+                            st.write(f"**{target}** ← `{client_h}`")
                     
                     cleaned_df = pd.DataFrame()
                     for internal_name in target_schema:
