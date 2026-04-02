@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 from openai import OpenAI
 import json
+import re
 
 # --- SETUP THE AI BRAIN ---
 # Using GitHub Models (GPT-4o-mini)
@@ -83,11 +84,36 @@ if uploaded_file:
                     else:
                         cleaned_df[internal_name] = "" # Leave blank if missing so the AI Feedback catches it
                 
-                # 3. Formatting Rules
-                # Format Title (Title Case)
+                # 3. Formatting Rules & SMART EXTRACTION
                 if "productTitle::en" in cleaned_df.columns:
+                    # Clean up the title formatting first
                     cleaned_df["productTitle::en"] = cleaned_df["productTitle::en"].astype(str).str.title().replace('Nan', '')
-                
+                    
+                    # Build a "Detective Pattern" based on your acceptable units
+                    # This tells Python to look for a number, optional decimals, a space, and a valid unit (e.g. "500 g" or "1.5 l")
+                    unit_regex = '|'.join([u.lower() for u in acceptable_units])
+                    pattern = r'(?i)(\d+(?:\.\d+)?)\s*(' + unit_regex + r')\b'
+                    
+                    # Scan every row to fill in missing blanks
+                    for index, row in cleaned_df.iterrows():
+                        title = str(row['productTitle::en'])
+                        
+                        val_missing = pd.isna(row.get('contentsValue')) or str(row.get('contentsValue')).strip() in ['', 'nan']
+                        unit_missing = pd.isna(row.get('contentsUnit')) or str(row.get('contentsUnit')).strip() in ['', 'nan']
+                        
+                        # If the client forgot the quantity or unit, search the title for it
+                        if val_missing or unit_missing:
+                            match = re.search(pattern, title)
+                            
+                            if match: # If Python finds "125 G" in the title
+                                extracted_qty = match.group(1)
+                                extracted_unit = match.group(2).lower() # standardizes to lowercase
+                                
+                                if val_missing:
+                                    cleaned_df.at[index, 'contentsValue'] = extracted_qty
+                                if unit_missing:
+                                    cleaned_df.at[index, 'contentsUnit'] = extracted_unit
+                                    
                 # 4. Catalogue Specialist AI Feedback Engine (The "Doubts")
                 feedback_notes = []
                 
@@ -99,9 +125,9 @@ if uploaded_file:
                     if pd.isna(row.get('pieceBarcode')) or str(row.get('pieceBarcode')).strip() in ['', 'nan']:
                         doubts.append("Missing Barcode")
                         
-                    # Check Brand
-                    if pd.isna(row.get('brandName')) or str(row.get('brandName')).strip() in ['', 'nan']:
-                        doubts.append("Missing Brand")
+                    # --- BRAND CHECK REMOVED ---
+                    # We no longer penalize or flag missing brands, as this requires 
+                    # specialist domain knowledge to extract from the title.
                         
                     # Check Quantity
                     if pd.isna(row.get('contentsValue')) or str(row.get('contentsValue')).strip() in ['', 'nan']:
