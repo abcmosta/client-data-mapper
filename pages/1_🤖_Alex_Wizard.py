@@ -4,11 +4,11 @@ from openai import OpenAI
 import json
 import re
 import io
-from deep_translator import GoogleTranslator # NEW: The Free Translation Engine!
+from deep_translator import GoogleTranslator
 
 # --- 🔒 AUTHENTICATION CHECK (THE BOUNCER) ---
-if 'user' not in st.session_state or st.session_state.user is None:
-    st.warning("🛑 Access Denied. Please go to the main Login page and verify your email.")
+if not st.session_state.get('authenticated', False):
+    st.warning("🛑 Access Denied. Please go to the main Login page and enter the Master Key.")
     st.stop()
 
 # --- SETUP THE AI BRAIN ---
@@ -18,32 +18,12 @@ client = OpenAI(
     api_key=github_token 
 )
 
-# --- INITIALIZE SESSION STATE ---
-if 'ai_mapping' not in st.session_state:
-    st.session_state.ai_mapping = None
-if 'last_uploaded_file' not in st.session_state:
-    st.session_state.last_uploaded_file = None
-
-# --- SIDEBAR (Task Setup) ---
-with st.sidebar:
-    st.header("⚙️ Task Setup")
-    case_id = st.text_input("Case ID", placeholder="e.g., CAS-12345")
-    client_name = st.text_input("Client Name", placeholder="e.g., Carrefour")
-    
-    talabat_countries = ["", "Egypt", "United Arab Emirates", "Kuwait", "Qatar", "Bahrain", "Oman"]
-    country = st.selectbox("Country", options=talabat_countries)
-    
-    task_ready = bool(case_id.strip() and client_name.strip() and country)
-    st.divider()
+# ... (Keep all your initialization and sidebar code the same) ...
 
 # --- MAIN APP HEADER ---
 st.title("🤖 Alex, The Invincible")
 
-display_name = st.session_state.get('user_name', '')
-if not display_name and 'user' in st.session_state and st.session_state.user:
-    display_name = st.session_state.user.email.split('@')[0].title()
-elif not display_name:
-    display_name = "There"
+display_name = st.session_state.get('user_name', 'There').title()
 
 st.markdown(f"""
 Hello **{display_name}** ❤️, I am **Alex**. 
@@ -51,6 +31,8 @@ An AI Assistant Created By **Mostafa Abdelaziz**.
 I am your window for more efficient data work. Just upload the raw vendor file and let me do my magic ✨.
 """)
 st.divider()
+
+# ... (The rest of your Alex code stays exactly the same!) ...
 
 # --- FILE UPLOADER ---
 uploaded_file = st.file_uploader("Drop the messy client file here (CSV or Excel)", type=["csv", "xlsx"])
