@@ -33,7 +33,7 @@ with st.sidebar:
     case_id = st.text_input("Case ID", placeholder="e.g., CAS-12345")
     client_name = st.text_input("Client Name", placeholder="e.g., Carrefour")
     
-    talabat_countries = ["", "Egypt", "United Arab Emirates", "Kuwait", "Qatar", "Bahrain", "Oman"]
+    talabat_countries = ["", "Egypt", "United Arab Emirates", "Kuwait", "Qatar", "Bahrain", "Oman", "Iraq","Jordan"]
     country = st.selectbox("Country", options=talabat_countries)
     
     task_ready = bool(case_id.strip() and client_name.strip() and country)

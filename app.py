@@ -31,7 +31,7 @@ if not st.session_state.authenticated:
         
         with st.form("login_form"):
             user_name = st.text_input("What would you like me to call you?", placeholder="e.g., Mostafa")
-            user_email = st.text_input("Work Email", placeholder="name@talabat.com")
+            user_email = st.text_input("Work Email", placeholder="name@instahsop.com")
             password = st.text_input("Master Key", type="password", placeholder="Enter the company password")
             
             submitted = st.form_submit_button("Unlock Alex", use_container_width=True, type="primary")
