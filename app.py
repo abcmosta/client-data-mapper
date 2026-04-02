@@ -7,25 +7,6 @@ import re
 # --- UI PAGE CONFIGURATION ---
 st.set_page_config(page_title="Content Wizard Optimizer", page_icon="🌀", layout="wide", initial_sidebar_state="expanded")
 
-# --- FORCE DARK THEME CSS ---
-st.markdown("""
-    <style>
-        /* Main background */
-        .stApp {
-            background-color: #0E1117;
-            color: #FAFAFA;
-        }
-        /* Sidebar background */
-        [data-testid="stSidebar"] {
-            background-color: #1a1c24;
-        }
-        /* Make metric labels white */
-        [data-testid="stMetricLabel"] {
-            color: #FAFAFA !important;
-        }
-    </style>
-    """, unsafe_allow_html=True)
-
 # --- SETUP THE AI BRAIN ---
 github_token = st.secrets["GITHUB_TOKEN"]
 client = OpenAI(
@@ -39,11 +20,11 @@ with st.sidebar:
     st.info("⚠️ Required: Fill all fields to unlock data processing.")
     
     # 1. New Mandatory Input Fields
-    case_id = st.text_input("Case ID", placeholder="e.g., CAS-12345")
+    case_id = st.text_input("Case ID", placeholder="e.g., CAS-3XXXXXXX")
     client_name = st.text_input("Client Name", placeholder="e.g., Carrefour")
     
     # 2. Strict Country Dropdown (Egypt + GCC)
-    talabat_countries = ["", "Egypt", "United Arab Emirates", "Kuwait", "Qatar", "Bahrain", "Oman"]
+    talabat_countries = ["", "Egypt", "United Arab Emirates", "Kuwait", "Qatar", "Bahrain", "Oman","Jordan","Iraq"]
     country = st.selectbox("Country", options=talabat_countries)
     
     # 3. The "Validation Lock" Logic
@@ -63,9 +44,15 @@ with st.sidebar:
     """, language="markdown")
 
 # --- MAIN APP HEADER ---
-st.title("Caspar, The Invincible")
-st.markdown("Hello There, I am Casper. An AI Assistant Created By Mostafa Abdelaziz, " \
-"I am your window for more efficient data work, Just upload the raw vendor file and let me do my magic.")
+# --- MAIN APP HEADER ---
+st.title("👻 Alex, The Invincible") 
+
+st.markdown("""
+Hello There ❤️, I am **Alex**. 
+
+An AI Assistant Created By **Mostafa Abdelaziz**. 
+I am your window for more efficient data work. Just upload the raw vendor file and let me do my magic ✨.
+""")
 st.divider()
 
 # --- FILE UPLOADER ---
