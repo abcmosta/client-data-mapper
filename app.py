@@ -39,7 +39,7 @@ with st.sidebar:
     st.write("**Target Schema:**")
     st.code("""
 - pieceBarcode
-- brandName
+- brand_id
 - productTitle::en
 - imageUrls
 - contentsValue
@@ -80,7 +80,7 @@ if uploaded_file:
         headers = df.columns.tolist()
         sample = df.head(3).to_dict(orient='records')
         
-        target_schema = ["pieceBarcode", "brandName", "productTitle::en", "imageUrls", "contentsValue", "contentsUnit"]
+        target_schema = ["pieceBarcode", "brand_id", "productTitle::en", "imageUrls", "contentsValue", "contentsUnit"]
         acceptable_units = ["bags", "bouquets - Flowers", "boxes", "bunches", "capsules", "cl", "cm", "cm2", "cm3", "dl", "g", "kg", "l", "lb", "m", "mg", "ml", "oz", "packets", "pieces", "rolls", "sachets", "sheets", "tablets", "units"]
         
         # --- THE VALIDATION LOCK ---
@@ -117,7 +117,7 @@ if uploaded_file:
                     
                     5. 'imageUrls': Look for Link, URL, Photo, Media.
                     
-                    6. 'brandName': Look for Vendor, Manufacturer, Make, Brand.
+                    6. 'brand_id': Look for Vendor, Manufacturer, Make, Brand.
 
                     Return ONLY a JSON object: {{"Target_Field": "Client_Header"}}. 
                     If no valid match exists for a field, omit it entirely.
