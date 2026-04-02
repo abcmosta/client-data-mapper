@@ -63,8 +63,9 @@ with st.sidebar:
     """, language="markdown")
 
 # --- MAIN APP HEADER ---
-st.title("📦 Catalogue Onboarding Assistant")
-st.markdown("Automate data mapping, extract units, and validate catalogue readiness in seconds.")
+st.title("Caspar, The Invincible")
+st.markdown("Hello There, I am Casper. An AI Assistant Created By Mostafa Abdelaziz, " \
+"I am your window for more efficient data work, Just upload the raw vendor file and let me do my magic.")
 st.divider()
 
 # --- FILE UPLOADER ---
