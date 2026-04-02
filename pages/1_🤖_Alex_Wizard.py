@@ -7,9 +7,10 @@ import io
 from deep_translator import GoogleTranslator
 
 # --- 🔒 AUTHENTICATION CHECK (THE BOUNCER) ---
+# This stops unverified users from accessing the URL directly!
 if not st.session_state.get('authenticated', False):
     st.warning("🛑 Access Denied. Please go to the main Login page and enter the Master Key.")
-    st.stop()
+    st.stop() # This completely kills the script so they can't see the tool
 
 # --- SETUP THE AI BRAIN ---
 github_token = st.secrets["GITHUB_TOKEN"]
@@ -18,11 +19,41 @@ client = OpenAI(
     api_key=github_token 
 )
 
-# ... (Keep all your initialization and sidebar code the same) ...
+# --- INITIALIZE SESSION STATE (MEMORY FIX) ---
+if 'ai_mapping' not in st.session_state:
+    st.session_state.ai_mapping = None
+if 'last_uploaded_file' not in st.session_state:
+    st.session_state.last_uploaded_file = None
+
+# --- SIDEBAR (Task Setup) ---
+with st.sidebar:
+    st.header("⚙️ Task Setup")
+    st.info("⚠️ Required: Fill all fields to unlock data processing.")
+    
+    case_id = st.text_input("Case ID", placeholder="e.g., CAS-12345")
+    client_name = st.text_input("Client Name", placeholder="e.g., Carrefour")
+    
+    talabat_countries = ["", "Egypt", "United Arab Emirates", "Kuwait", "Qatar", "Bahrain", "Oman"]
+    country = st.selectbox("Country", options=talabat_countries)
+    
+    task_ready = bool(case_id.strip() and client_name.strip() and country)
+    st.divider()
+    
+    st.header("📋 System Rules")
+    st.write("**Target Schema:**")
+    st.code("""
+- pieceBarcode
+- brandName
+- productTitle::en
+- imageUrls
+- contentsValue
+- contentsUnit
+    """, language="markdown")
 
 # --- MAIN APP HEADER ---
 st.title("🤖 Alex, The Invincible")
 
+# Safely grab the user's name from memory
 display_name = st.session_state.get('user_name', 'There').title()
 
 st.markdown(f"""
@@ -32,17 +63,17 @@ I am your window for more efficient data work. Just upload the raw vendor file a
 """)
 st.divider()
 
-# ... (The rest of your Alex code stays exactly the same!) ...
-
 # --- FILE UPLOADER ---
 uploaded_file = st.file_uploader("Drop the messy client file here (CSV or Excel)", type=["csv", "xlsx"])
 
 if uploaded_file:
+    # Reset mapping logic if the user uploads a different file
     if st.session_state.last_uploaded_file != uploaded_file.name:
         st.session_state.ai_mapping = None
         st.session_state.last_uploaded_file = uploaded_file.name
 
     try:
+        # Read everything as a string to protect barcodes from the very beginning
         if uploaded_file.name.endswith('.csv'):
             df = pd.read_csv(uploaded_file, dtype=str)
         else:
@@ -50,6 +81,10 @@ if uploaded_file:
             
         with st.expander("👀 View Raw Client Data (Click to expand)"):
             st.dataframe(df.head(5), use_container_width=True)
+            
+        st.write("### 📊 Submission Details")
+        st.metric("Total Products Submitted", len(df))
+        st.divider()
             
         headers = df.columns.tolist()
         sample = df.head(3).to_dict(orient='records')
@@ -69,19 +104,24 @@ if uploaded_file:
                     mapping_prompt = f"""
                     You are Alex, an elite Data Engineer. 
                     Map the client headers to our 'Target Schema': {target_schema}.
+
                     Client Headers: {headers}
                     Data Sample: {sample}
 
-                    STRICT RULES:
-                    1. 'pieceBarcode': Priority EAN > GTIN > UPC > Barcode > Item Code. 
-                    2. 'productTitle::en': Priority Long Description > Title > Name.
-                    3. 'contentsValue': 🚨 NEVER map Price, Cost, MSRP. Ignore financial columns.
-                    4. 'contentsUnit': 🚨 NEVER map currency symbols.
-                    5. 'imageUrls': Look for Link, URL, Photo.
-                    6. 'brandName': Look for Vendor, Make, Brand.
+                    STRICT RULES & TIE-BREAKERS:
+                    1. 'pieceBarcode': Priority is EAN > GTIN > UPC > Barcode > Item Code > PLU. 
+                       (Look for 12 to 14 digit global numbers).
+                    2. 'productTitle::en': Choose the MOST descriptive English header. 
+                       Priority: Long Description > Title > Name.
+                    3. 'contentsValue': Look for Size, Weight, Volume, Net Weight, or Qty.
+                       🚨 CRITICAL RULE: NEVER map Price, Cost, MSRP, or RRP to contentsValue. Ignore all financial or currency columns completely.
+                    4. 'contentsUnit': Look for UOM, Unit, Measurement. 
+                       🚨 CRITICAL RULE: NEVER map currency symbols ($, AED, EGP, SAR) to contentsUnit.
+                    5. 'imageUrls': Look for Link, URL, Photo, Media.
+                    6. 'brandName': Look for Vendor, Manufacturer, Make, Brand.
 
                     Return ONLY a JSON object: {{"Target_Field": "Client_Header"}}. 
-                    If no valid match exists, omit it entirely.
+                    If no valid match exists for a field, omit it entirely.
                     """
                     response = client.chat.completions.create(
                         model="gpt-4o-mini",
@@ -118,11 +158,11 @@ if uploaded_file:
                             else:
                                 cleaned_df[internal_name] = "" 
                                 
-                        # Prepare the new Translation columns
+                        # Prepare Translation columns
                         cleaned_df['productTitle::ar'] = ""
                         cleaned_df['productTitle::ku'] = ""
                         
-                        # Boot up the Translators (source='auto' lets it detect if the client gave us Arabic by mistake!)
+                        # Boot up Translators
                         translator_ar = GoogleTranslator(source='auto', target='ar')
                         translator_ku = GoogleTranslator(source='auto', target='ku')
                         
@@ -155,7 +195,7 @@ if uploaded_file:
                                     cleaned_df.at[index, 'productTitle::ar'] = "Translation Failed"
                                     cleaned_df.at[index, 'productTitle::ku'] = "Translation Failed"
                             
-                            # 4. Smart Extraction
+                            # 4. Smart Extraction (Value & Unit)
                             val_missing = pd.isna(row.get('contentsValue')) or str(row.get('contentsValue')).strip() in ['', 'nan']
                             unit_missing = pd.isna(row.get('contentsUnit')) or str(row.get('contentsUnit')).strip() in ['', 'nan']
                             
