@@ -20,7 +20,7 @@ with st.sidebar:
     st.info("⚠️ Required: Fill all fields to unlock data processing.")
     
     # 1. New Mandatory Input Fields
-    case_id = st.text_input("Case ID", placeholder="e.g., CAS-3XXXXXXX")
+    case_id = st.text_input("Case ID", placeholder="e.g., 3XXXXXXX")
     client_name = st.text_input("Client Name", placeholder="e.g., Carrefour")
     
     # 2. Strict Country Dropdown (Egypt + GCC)
