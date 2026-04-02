@@ -40,7 +40,7 @@ if st.session_state.user is None:
     st.write("---")
     
     # 2. OTP Verification Form
-    otp = st.text_input("Enter the 6-Digit Code", max_chars=6)
+    otp = st.text_input("Enter the 8-Digit Code", max_chars=8)
     
     if st.button("Unlock Alex AI", type="primary"):
         if email and otp:
