@@ -148,7 +148,7 @@ if uploaded_file:
                 # STEP 3: DEEP HYGIENE, TRANSLATION & VALIDATION
                 # ==========================================
                 if submitted:
-                    with st.spinner("Washing data, translating titles (Ar/Ku), and building Excel Masterpiece..."):
+                    with st.spinner("Washing data, translating titles (Arabic), and building Excel Masterpiece..."):
                         active_mapping = {k: v for k, v in final_mapping.items() if v != "--- Leave Blank ---"}
                         cleaned_df = pd.DataFrame()
                         
@@ -158,13 +158,11 @@ if uploaded_file:
                             else:
                                 cleaned_df[internal_name] = "" 
                                 
-                        # Prepare Translation columns
+                        # Prepare Translation column
                         cleaned_df['productTitle::ar'] = ""
-                        cleaned_df['productTitle::ku'] = ""
                         
-                        # Boot up Translators
+                        # Boot up Translator
                         translator_ar = GoogleTranslator(source='auto', target='ar')
-                        translator_ku = GoogleTranslator(source='auto', target='ku')
                         
                         # --- THE CAR WASH (Deep Data Hygiene) ---
                         feedback_notes = []
@@ -190,10 +188,8 @@ if uploaded_file:
                             if title:
                                 try:
                                     cleaned_df.at[index, 'productTitle::ar'] = translator_ar.translate(title)
-                                    cleaned_df.at[index, 'productTitle::ku'] = translator_ku.translate(title)
                                 except Exception:
                                     cleaned_df.at[index, 'productTitle::ar'] = "Translation Failed"
-                                    cleaned_df.at[index, 'productTitle::ku'] = "Translation Failed"
                             
                             # 4. Smart Extraction (Value & Unit)
                             val_missing = pd.isna(row.get('contentsValue')) or str(row.get('contentsValue')).strip() in ['', 'nan']
