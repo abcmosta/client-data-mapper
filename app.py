@@ -20,10 +20,9 @@ st.write("I am not a cruel person as people may think!🥹 Today, I am just your
 "I am here to help you do the job more effiently, Upload any messy client spreadsheet, and the I will format it to talabat's standard schema.")
 
 # --- THE APP LOGIC ---
-uploaded_file = st.file_uploader("Upload Client Spreadsheet (CSV or Excel)", type=["csv", "xlsx"])
+uploaded_file = st.file_uploader("Upload Client Spreadsheet", type=["csv", "xlsx"])
 
 if uploaded_file:
-    # 1. Read the file
     try:
         if uploaded_file.name.endswith('.csv'):
             df = pd.read_csv(uploaded_file)
@@ -33,95 +32,108 @@ if uploaded_file:
         st.write("### 📄 Original Client Data Preview")
         st.dataframe(df.head())
         
-        # 2. Extract the "DNA" (Headers and a tiny sample)
         headers = df.columns.tolist()
-        sample = df.head(2).to_dict(orient='records')
+        sample = df.head(3).to_dict(orient='records')
         
-        # Define what YOUR company needs
-        target_schema = ["Product_Name", "SKU_Number", "Unit_Price", "Brand_Vendor"]
+        # --- NEW: Strict Business Rules ---
+        target_schema = [
+            "pieceBarcode", "brandName", "productTitle::en", 
+            "imageUrls", "contentsValue", "contentsUnit"
+        ]
         
-        st.write("---")
-        st.write(f"**Target Schema:** `{target_schema}`")
+        acceptable_units = [
+            "bags", "bouquets - Flowers", "boxes", "bunches", "capsules",
+            "cl", "cm", "cm2", "cm3", "dl", "g", "kg", "l", "lb", "m", 
+            "mg", "ml", "oz", "packets", "pieces", "rolls", "sachets", 
+            "sheets", "tablets", "units"
+        ]
         
-        # 3. The Mapping Button
-        if st.button("🧠 Auto-Map Columns"):
-            with st.spinner("AI is analyzing headers and sample data..."):
+        if st.button("🧠 Map & Validate for Catalogue"):
+            with st.spinner("AI is analyzing and validating data..."):
                 
-                # The Prompt
+                # 1. AI Mapping Prompt
                 mapping_prompt = f"""
-                You are a data engineer mapping client files to our internal schema.
-                Target Schema: {target_schema}
+                Map the client headers to this exact case-sensitive schema: {target_schema}.
                 Client Headers: {headers}
-                Client Data Sample: {sample}
+                Sample Data: {sample}
                 
-                Match the client headers to our Target Schema based on the names and sample data context.
-                Return ONLY a raw JSON object where the key is the Target Schema field and the value is the Client Header.
-                Example: {{"Product_Name": "Item Title", "SKU_Number": "UPC"}}
+                Rules:
+                - Return ONLY a JSON object: {{"Target_Field": "Client_Header"}}
+                - If the client doesn't have a field (like brandName), do not include it in the JSON.
                 """
                 
-                # Call the AI
                 response = client.chat.completions.create(
                     model="gpt-4o-mini",
                     messages=[
-                        {"role": "system", "content": "You output strict JSON. No markdown, no explanations."},
+                        {"role": "system", "content": "You output strict JSON."},
                         {"role": "user", "content": mapping_prompt}
                     ],
                     response_format={ "type": "json_object" }
                 )
                 
-                # 4. Parse the AI's JSON Map
                 mapping_dict = json.loads(response.choices[0].message.content)
                 
-                st.success("Mapping Complete!")
-                st.write("**AI Generated Map:**", mapping_dict)
-                
-                # 5. Transform and Clean the bulk data
+                # 2. Build the Cleaned DataFrame
                 cleaned_df = pd.DataFrame()
-                audit_trail = [] # List to track our changes
                 
-                for internal_name, client_name in mapping_dict.items():
-                    if client_name in df.columns:
-                        # Grab the raw data
-                        raw_data = df[client_name].astype(str)
-                        
-                        # CLEANING RULE: Strip extra spaces and fix capitalization (Title Case)
-                        clean_data = raw_data.str.strip().str.title()
-                        
-                        cleaned_df[internal_name] = clean_data
-                        
-                        # AUDIT TRAIL LOGIC: Compare raw vs clean row by row
-                        for i in range(len(raw_data)):
-                            if raw_data.iloc[i] != clean_data.iloc[i]:
-                                audit_trail.append({
-                                    "Row": i + 1,
-                                    "Column": internal_name,
-                                    "Original": raw_data.iloc[i],
-                                    "Cleaned": clean_data.iloc[i],
-                                    "Action": "Standardized Text Formatting"
-                                })
+                for internal_name in target_schema:
+                    client_name = mapping_dict.get(internal_name)
+                    if client_name and client_name in df.columns:
+                        cleaned_df[internal_name] = df[client_name]
                     else:
-                        cleaned_df[internal_name] = "Not Found"
+                        cleaned_df[internal_name] = "" # Leave blank if missing so the AI Feedback catches it
+                
+                # 3. Formatting Rules
+                # Format Title (Title Case)
+                if "productTitle::en" in cleaned_df.columns:
+                    cleaned_df["productTitle::en"] = cleaned_df["productTitle::en"].astype(str).str.title().replace('Nan', '')
+                
+                # 4. Catalogue Specialist AI Feedback Engine (The "Doubts")
+                feedback_notes = []
+                
+                # We check every single row against your strict rules
+                for index, row in cleaned_df.iterrows():
+                    doubts = []
+                    
+                    # Check Barcode
+                    if pd.isna(row.get('pieceBarcode')) or str(row.get('pieceBarcode')).strip() in ['', 'nan']:
+                        doubts.append("Missing Barcode")
                         
-                st.write("### ✨ Processed Output")
+                    # Check Brand
+                    if pd.isna(row.get('brandName')) or str(row.get('brandName')).strip() in ['', 'nan']:
+                        doubts.append("Missing Brand")
+                        
+                    # Check Quantity
+                    if pd.isna(row.get('contentsValue')) or str(row.get('contentsValue')).strip() in ['', 'nan']:
+                        doubts.append("Missing Quantity")
+                        
+                    # Strict Unit Validation
+                    unit = str(row.get('contentsUnit')).strip().lower()
+                    if unit not in [u.lower() for u in acceptable_units] and unit not in ['', 'nan']:
+                        doubts.append(f"Invalid Unit '{unit}'")
+                    elif unit in ['', 'nan']:
+                        doubts.append("Missing Unit")
+                        
+                    # Check Image
+                    if pd.isna(row.get('imageUrls')) or str(row.get('imageUrls')).strip() in ['', 'nan']:
+                        doubts.append("Missing Image")
+                        
+                    # Apply final status
+                    if not doubts:
+                        feedback_notes.append("✅ Ready for Catalogue")
+                    else:
+                        feedback_notes.append("⚠️ " + ", ".join(doubts))
+                        
+                cleaned_df['Catalogue_Feedback'] = feedback_notes
+                
+                # 5. Display & Download
+                st.success("Mapping & Validation Complete!")
+                
+                st.write("### 📋 Final Catalogue File")
                 st.dataframe(cleaned_df)
                 
-                # --- NEW: Display the Audit Trail ---
-                if audit_trail:
-                    st.write("### 🔍 'What Changed' Audit Log")
-                    audit_df = pd.DataFrame(audit_trail)
-                    st.dataframe(audit_df)
-                else:
-                    st.success("Data was already perfectly clean! No changes made.")
-                
-                
-                # 6. Allow Download
                 csv = cleaned_df.to_csv(index=False).encode('utf-8')
-                st.download_button(
-                    label="Download Cleaned Data (CSV)",
-                    data=csv,
-                    file_name="cleaned_client_data.csv",
-                    mime="text/csv",
-                )
+                st.download_button("Download Processed Catalogue (CSV)", data=csv, file_name="catalogue_ready.csv", mime="text/csv")
                 
     except Exception as e:
         st.error(f"An error occurred: {e}")
