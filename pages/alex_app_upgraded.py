@@ -110,11 +110,33 @@ if uploaded_file:
         st.warning("🔒 **Action Required:** Please fill in the Case ID, Client Name, and Country.")
     else:
         if st.button("🧠 Step 1: Map Columns with Alex", type="primary"):
-            with st.spinner("Alex is analysing headers..."):
-                prompt = f"""Map headers to: {target_schema}. Client Headers: {headers}. Sample: {sample}. Return strict JSON {{"Target_Field": "Client_Header"}}. Omit if no match."""
+            with st.spinner("Alex is analysing headers and patterns..."):
+                
+                # RESTORED: The Brain mapping instructions
+                mapping_prompt = f"""
+You are Alex, an elite Data Engineer.
+Map the client headers to our 'Target Schema': {target_schema}.
+
+Client Headers: {headers}
+Data Sample: {sample}
+
+STRICT RULES & TIE-BREAKERS:
+1. 'pieceBarcode': Priority is EAN > GTIN > UPC > Barcode > Item Code > PLU.
+   (Look for 12 to 14 digit global numbers).
+2. 'productTitle::en': Choose the MOST descriptive English header.
+   Priority: Long Description > Title > Name.
+3. 'contentsValue': Look for Size, Weight, Volume, Net Weight, or Qty.
+   🚨 CRITICAL RULE: NEVER map Price, Cost, MSRP, or RRP to contentsValue.
+4. 'contentsUnit': Look for UOM, Unit, Measurement.
+   🚨 CRITICAL RULE: NEVER map currency symbols ($, AED, EGP, SAR) to contentsUnit.
+5. 'imageUrls': Look for Link, URL, Photo, Media.
+
+Return ONLY a JSON object: {{"Target_Field": "Client_Header"}}.
+If no valid match exists for a field, omit it entirely.
+"""
                 response = client.chat.completions.create(
                     model="gpt-4o-mini",
-                    messages=[{"role": "system", "content": "You output strict JSON."}, {"role": "user", "content": prompt}],
+                    messages=[{"role": "system", "content": "You output strict JSON."}, {"role": "user", "content": mapping_prompt}],
                     response_format={"type": "json_object"},
                 )
                 st.session_state.ai_mapping = json.loads(response.choices[0].message.content)
