@@ -10,7 +10,7 @@ from deep_translator import GoogleTranslator
 # Import the Smart Title Formatter (place smart_title_formatter.py
 # in the same folder as this app file)
 # ─────────────────────────────────────────────────────────────────────────────
-from smart_title_formatter import format_title as smart_format_title
+from pages.smart_title_formatter import format_title as smart_format_title
 
 # ─────────────────────────────────────────────────────────────────────────────
 # 🔒 AUTHENTICATION CHECK
