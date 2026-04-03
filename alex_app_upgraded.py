@@ -7,10 +7,9 @@ import io
 from deep_translator import GoogleTranslator
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Import the Smart Title Formatter (place smart_title_formatter.py
-# in the same folder as this app file)
+# Import the Smart Title Formatter (Must be in the ROOT folder next to app.py)
 # ─────────────────────────────────────────────────────────────────────────────
-from pages.smart_title_formatter import format_title as smart_format_title
+from smart_title_formatter import format_title as smart_format_title
 
 # ─────────────────────────────────────────────────────────────────────────────
 # 🔒 AUTHENTICATION CHECK
@@ -211,7 +210,6 @@ If no valid match exists for a field, omit it entirely.
                         if v != "--- Leave Blank ---"
                     }
 
-                    # Build raw cleaned dataframe
                     cleaned_df = pd.DataFrame()
                     for internal_name in target_schema:
                         if (
@@ -262,7 +260,6 @@ If no valid match exists for a field, omit it entirely.
                         confidence      = title_result['confidence']
                         title_issues    = title_result['issues']
 
-                        # Record what changed
                         change_note = ""
                         if formatted_title != raw_title and raw_title:
                             change_note = f"{raw_title} → {formatted_title}"
@@ -271,7 +268,6 @@ If no valid match exists for a field, omit it entirely.
                         cleaned_df.at[index, '_title_confidence'] = confidence
                         cleaned_df.at[index, '_title_changes']    = change_note
 
-                        # Flag low-confidence titles for human review
                         if confidence == 'low':
                             doubts.append("⚠ Title needs review")
                         if title_issues:
@@ -288,7 +284,7 @@ If no valid match exists for a field, omit it entirely.
                             except Exception:
                                 cleaned_df.at[index, 'productTitle::ar'] = "Translation Failed"
 
-                        # ── 4. Smart Size Extraction (fallback if still empty)
+                        # ── 4. Smart Size Extraction ──────────────────────
                         val_missing = (
                             not cv_raw or cv_raw in ('', 'nan', '0', '0.0')
                         )
@@ -353,7 +349,6 @@ If no valid match exists for a field, omit it entirely.
                     col4.metric("📊 Quality Score",        success_rate)
                     st.write("---")
 
-                    # Confidence breakdown
                     conf_counts = cleaned_df['_title_confidence'].value_counts()
                     with st.expander("🔍 Title Confidence Breakdown"):
                         st.write(f"**High confidence:** {conf_counts.get('high', 0)} titles")
@@ -372,11 +367,9 @@ If no valid match exists for a field, omit it entirely.
                     }
                     summary_df = pd.DataFrame(summary_data)
 
-                    # Columns for export (hide internal debug columns)
-                    export_cols = [
-                        c for c in cleaned_df.columns
-                        if not c.startswith('_')
-                    ] + ['Catalogue_Feedback']
+                    # FIXED: Removed the duplicate Catalogue_Feedback append
+                    export_cols = [c for c in cleaned_df.columns if not c.startswith('_')] 
+                    
                     export_ready = ready_df[[c for c in export_cols if c in ready_df.columns]]
                     export_error = error_df[[c for c in export_cols if c in error_df.columns]]
 
@@ -392,9 +385,7 @@ If no valid match exists for a field, omit it entirely.
                             )
                     excel_data = output.getvalue()
 
-                    output_filename = (
-                        f"{case_id} - {client_name} - {country}_Content_Wizard_v2.xlsx"
-                    )
+                    output_filename = f"{case_id} - {client_name} - {country}_Content_Wizard_v2.xlsx"
 
                     st.download_button(
                         label=f"📥 Download Enterprise Excel Report ({output_filename})",
