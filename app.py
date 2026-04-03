@@ -31,8 +31,8 @@ if not st.session_state.authenticated:
         
         with st.form("login_form"):
             user_name = st.text_input("What would you like me to call you?", placeholder="e.g., Mostafa")
-            user_email = st.text_input("Work Email", placeholder="name@instahsop.com")
-            password = st.text_input("Master Key", type="password", placeholder="Enter the company password")
+            user_email = st.text_input("Work Email", placeholder="name@instahsop.ae")
+            password = st.text_input("Password", type="password", placeholder="@mostafa shared this with you")
             
             submitted = st.form_submit_button("Unlock Alex", use_container_width=True, type="primary")
             
@@ -40,7 +40,7 @@ if not st.session_state.authenticated:
                 if not user_name or not user_email:
                     st.warning("Please tell me your name and email so we can proceed!")
                 elif password != st.secrets["MASTER_PASSWORD"]:
-                    st.error("Incorrect Master Key. Please try again.")
+                    st.error("Incorrect Password. Please try again.")
                 else:
                     # Success!
                     st.session_state.user_name = user_name
