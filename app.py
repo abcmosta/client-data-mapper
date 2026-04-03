@@ -30,7 +30,7 @@ if not st.session_state.authenticated:
         st.write("---")
         
         with st.form("login_form"):
-            user_name = st.text_input("What would you like me to call you?", placeholder="e.g., Mostafa")
+            user_name = st.text_input("What would you like Alex to call you?", placeholder="e.g., Mostafa")
             user_email = st.text_input("Work Email", placeholder="name@instahsop.ae")
             password = st.text_input("Password", type="password", placeholder="@mostafa shared this with you")
             
