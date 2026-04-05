@@ -539,13 +539,13 @@ if need_dims and titles_for_dims:
         for row_idx, dims in zip(batch_idx, results):
             if isinstance(dims, dict):
                 if dims.get("w"):
-                    work_df.at[row_idx, "widthInCm"]  = round(float(dims["w"]), 1)
+                    work_df.at[row_idx, "widthInCm"]  = str(round(float(dims["w"]), 1))
                 if dims.get("h"):
-                    work_df.at[row_idx, "heightInCm"] = round(float(dims["h"]), 1)
+                    work_df.at[row_idx, "heightInCm"] = str(round(float(dims["h"]), 1))
                 if dims.get("l"):
-                    work_df.at[row_idx, "lengthInCm"] = round(float(dims["l"]), 1)
+                    work_df.at[row_idx, "lengthInCm"] = str(round(float(dims["l"]), 1))
                 if dims.get("weight_g"):
-                    work_df.at[row_idx, "weightValue"] = round(float(dims["weight_g"]), 1)
+                    work_df.at[row_idx, "weightValue"] = str(round(float(dims["weight_g"]), 1))
 
         frac = 0.38 + 0.12 * min(start + DIM_CHUNK, len(dim_titles)) / len(dim_titles)
         progress.progress(frac, text=f"Dimensions… {min(start+DIM_CHUNK, len(dim_titles))}/{len(dim_titles)}")
