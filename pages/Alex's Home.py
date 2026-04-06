@@ -223,6 +223,8 @@ def nitro_translate(titles: list[str], target_lang: str, chunk: int = 30) -> lis
         if not done:
             translated.extend([""] * len(batch))
 
+        time.sleep(0.05)
+
     return translated[: len(titles)]
 
 
@@ -521,6 +523,8 @@ for idx, row in work_df.iterrows():
         "✅ Ready for Catalogue" if not doubts else "⚠️ " + ", ".join(doubts)
     )
 
+    time.sleep(0.05)
+
 work_df["Catalogue_Feedback"] = feedback
 progress.progress(0.35, text="Core processing done…")
 
@@ -549,6 +553,8 @@ if need_dims and titles_for_dims:
 
         frac = 0.38 + 0.12 * min(start + DIM_CHUNK, len(dim_titles)) / len(dim_titles)
         progress.progress(frac, text=f"Dimensions… {min(start+DIM_CHUNK, len(dim_titles))}/{len(dim_titles)}")
+
+        time.sleep(0.05)
 
 progress.progress(0.50, text="Dimensions complete…")
 
@@ -579,6 +585,8 @@ if (need_desc_en or need_desc_ar or need_desc_ku) and titles_for_desc:
 
         frac = 0.52 + 0.08 * min(start + DESC_CHUNK, len(desc_titles)) / len(desc_titles)
         progress.progress(frac, text=f"Descriptions… {min(start+DESC_CHUNK, len(desc_titles))}/{len(desc_titles)}")
+
+        time.sleep(0.05)
 
 progress.progress(0.60, text="Descriptions complete…")
 
