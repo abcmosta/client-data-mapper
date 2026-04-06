@@ -55,7 +55,7 @@ else:
     st.divider()
     
     if st.button("🚀 Take me to Alex", type="primary", use_container_width=True):
-        st.switch_page("pages/alex_app_upgraded.py")
+        st.switch_page("pages/Alex's Home.py")
         
     st.write("---")
     if st.button("Log Out", use_container_width=True):
