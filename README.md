@@ -1,9 +1,10 @@
 ---
-title: Alex AI Wizard
-emoji: 🤖
+title: Alex Ai Wizard
+emoji: 🪄
 colorFrom: blue
-colorTo: indigo
+colorTo: green
 sdk: streamlit
-app_file: app.py
+sdk_version: 1.43.0
+app_file: Login Gateway.py
 pinned: false
 ---
