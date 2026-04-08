@@ -2,7 +2,7 @@
 ╔══════════════════════════════════════════════════════════════════════════════╗
 ║           ALEX – SMART TITLE FORMATTER  v3.1                               ║
 ║           Trained on 19,000+ real Talabat catalogue titles                 ║
-║           Built by: Mostafa Abdelaziz              ║
+║           Built by: Mostafa Abdelaziz  |  Upgraded by: Claude              ║
 ╠══════════════════════════════════════════════════════════════════════════════╣
 ║  NEW in v3.1:                                                                ║
 ║    • PIM-compliant contentsUnit output (exact Talabat system strings)       ║
